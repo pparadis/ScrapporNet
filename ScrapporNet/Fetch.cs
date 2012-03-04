@@ -13,11 +13,8 @@ namespace ScrapporNet
         {
             var doc = new HtmlDocument();
             doc.Load(@"E:\SourceCode\ScrapporNet\ScrapporNet\bin\Debug\saq_p1.htm",Encoding.UTF8);
-
-            var wineNames = doc.DocumentNode.SelectNodes("//*/table[@class='recherche']/tbody/tr[*]/td[2]/a");
-
+            //var wineNames = doc.DocumentNode.SelectNodes("//*/table[@class='recherche']/tbody/tr[*]/td[2]/a");
             var wines = doc.DocumentNode.SelectNodes("//*/table[@class='recherche']/tbody/tr[*]");
-
             var infos = wines.First().SelectNodes("//td[2]");
             foreach (var info in infos)
             {
@@ -26,7 +23,6 @@ namespace ScrapporNet
 
                 Console.WriteLine(HttpUtility.HtmlDecode(wineName));
                 //Console.WriteLine("---");
-                //Couleur, Nature, Format, Code SAQ
                 Console.WriteLine("Couleur : " + wineDesc.Split(',')[0]);
                 Console.WriteLine("Nature : " + wineDesc.Split(',')[1]);
                 Console.WriteLine("Format : " + wineDesc.Split(',')[2]);
