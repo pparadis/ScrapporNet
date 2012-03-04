@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using HtmlAgilityPack;
 using Raven.Client.Document;
 
 namespace ScrapporNet
@@ -10,34 +11,35 @@ namespace ScrapporNet
     {
         static void Main(string[] args)
         {
+            new Fetch().FetchWinePages();
 
-            var documentStore = new DocumentStore { Url = "http://pascal-pc:8080" };
-            documentStore.Initialize();
+            //var documentStore = new DocumentStore { Url = "http://pascal-pc:8080" };
+            //documentStore.Initialize();
 
-            string wineid;
+            //string wineid;
+
+            ////using (var session = documentStore.OpenSession())
+            ////{
+            ////    var entity = new Wine { Name = "Allo" };
+
+            ////    session.Store(entity);
+            ////    session.SaveChanges();
+            ////    wineid = entity.Id;
+                
+            ////}
 
             //using (var session = documentStore.OpenSession())
             //{
-            //    var entity = new Wine { Name = "Allo" };
+            //    //var entity = session.Load<Wine>(wineid);
+            //    //Console.WriteLine(entity.Name);
+            //    //session.SaveChanges();
 
-            //    session.Store(entity);
-            //    session.SaveChanges();
-            //    wineid = entity.Id;
-                
+            //    foreach (var variable in session.Query<Wine>())
+            //    {
+            //        Console.WriteLine(variable.Id);
+            //    }
+
             //}
-
-            using (var session = documentStore.OpenSession())
-            {
-                //var entity = session.Load<Wine>(wineid);
-                //Console.WriteLine(entity.Name);
-                //session.SaveChanges();
-
-                foreach (var variable in session.Query<Wine>())
-                {
-                    Console.WriteLine(variable.Id);
-                }
-
-            }
             Console.ReadLine();
         }
     }
@@ -47,5 +49,14 @@ namespace ScrapporNet
         public string Name { get; set; }
         public string Id { get; set; }
 
+        public Wine(string name)
+        {
+            Name = name;
+        }
+
+        public override string ToString()
+        {
+            return Name + "-" + Id;
+        }
     }
 }
