@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using HtmlAgilityPack;
 using Raven.Client.Document;
@@ -11,7 +12,16 @@ namespace ScrapporNet
     {
         static void Main(string[] args)
         {
-            new Fetch().FetchWinePages();
+            var web = new WebClient {Encoding = Encoding.UTF8};
+            for (int i = 0; i < 1000; i= i+100)
+            {
+                var req = @"http://www.saq.com/webapp/wcs/stores/servlet/CatalogSearchResultView?storeId=10001&langId=-2&catalogId=10001&searchTerm=&resultCatEntryType=&beginIndex="+i+"&tri=RechercheUCIProdDescAttributeInfo&sensTri=AscOperator&searchType=100&codeReseau=&categoryId=&viewTaskName=SAQCatalogSearchResultView&catalogVenteId=&pageSize=100";
+                System.IO.File.WriteAllText("saq_"+i+".html", web.DownloadString(req), Encoding.UTF8);
+            }
+            //web.DownloadFile(req,"test2.html");
+            
+
+            //new Fetch().FetchWinePages();
 
             //var documentStore = new DocumentStore { Url = "http://pascal-pc:8080" };
             //documentStore.Initialize();
@@ -41,22 +51,6 @@ namespace ScrapporNet
 
             //}
             Console.ReadLine();
-        }
-    }
-
-    public class Wine
-    {
-        public string Name { get; set; }
-        public string Id { get; set; }
-
-        public Wine(string name)
-        {
-            Name = name;
-        }
-
-        public override string ToString()
-        {
-            return Name + "-" + Id;
         }
     }
 }
