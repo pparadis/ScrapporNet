@@ -12,16 +12,7 @@ namespace ScrapporNet
     {
         static void Main(string[] args)
         {
-            var web = new WebClient {Encoding = Encoding.UTF8};
-            for (int i = 0; i < 1000; i= i+100)
-            {
-                var req = @"http://www.saq.com/webapp/wcs/stores/servlet/CatalogSearchResultView?storeId=10001&langId=-2&catalogId=10001&searchTerm=&resultCatEntryType=&beginIndex="+i+"&tri=RechercheUCIProdDescAttributeInfo&sensTri=AscOperator&searchType=100&codeReseau=&categoryId=&viewTaskName=SAQCatalogSearchResultView&catalogVenteId=&pageSize=100";
-                System.IO.File.WriteAllText("saq_"+i+".html", web.DownloadString(req), Encoding.UTF8);
-            }
-            //web.DownloadFile(req,"test2.html");
-            
-
-            //new Fetch().FetchWinePages();
+            Fetch.FetchWinePages();
 
             //var documentStore = new DocumentStore { Url = "http://pascal-pc:8080" };
             //documentStore.Initialize();
