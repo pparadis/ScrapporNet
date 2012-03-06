@@ -14,28 +14,22 @@ namespace ScrapporNet
         {
             var doc = new HtmlDocument();
             doc.Load(@"E:\wine\saq_200.html", Encoding.UTF8);
-            var wines = doc.DocumentNode.SelectNodes("//table[@class='recherche']/tbody/tr[*]");
-            foreach (var wineRow in wines)
+            var wines = doc.DocumentNode.SelectNodes("//table[@class='recherche']/tbody/tr[*]/td[2]");
+            foreach (var info in wines)
             {
-                var infos = wineRow.SelectNodes("td[2]");
-                foreach (var info in infos)
-                {
-                    var wineName = info.ChildNodes[1].InnerHtml.Trim(); //Name
-                    var wineDesc = info.ChildNodes[3].InnerHtml.Replace("\t", "").Replace("\n", "").Replace("\r","").Replace("&nbsp;", " ").Trim(); //Name
+                var wineName = info.ChildNodes[1].InnerHtml.Trim();
+                var wineDesc = info.ChildNodes[3].InnerHtml.Replace("\t", "").Replace("\n", "").Replace("\r", "").Replace("&nbsp;", " ").Trim();
 
-                    Console.WriteLine(HttpUtility.HtmlDecode(wineName));
-                    //Console.WriteLine("---");
-                    Console.WriteLine("Couleur : " + wineDesc.Split(',')[0]);
-                    Console.WriteLine("Nature : " + wineDesc.Split(',')[1]);
-                    Console.WriteLine("Format : " + wineDesc.Split(',')[2]);
-                    Console.WriteLine("Code SAQ : " + wineDesc.Split(',')[3]);
-                    //Console.WriteLine(HttpUtility.HtmlDecode(wineDesc));
-                    Console.WriteLine("---------------------------------");
-                }
+                Console.WriteLine(HttpUtility.HtmlDecode(wineName));
+                //Console.WriteLine("---");
+                Console.WriteLine("Couleur : " + wineDesc.Split(',')[0]);
+                Console.WriteLine("Nature : " + wineDesc.Split(',')[1]);
+                Console.WriteLine("Format : " + wineDesc.Split(',')[2]);
+                Console.WriteLine("Code SAQ : " + wineDesc.Split(',')[3]);
+                //Console.WriteLine(HttpUtility.HtmlDecode(wineDesc));
+                Console.WriteLine("---------------------------------");
             }
 
-            
-            
             //doc.Load("http://www.saq.com/webapp/wcs/stores/servlet/CatalogSearchResultView?storeId=10001&catalogId=10001&resultCatEntryType=2&beginIndex=0&tri=RechercheUCIProdDescAttributeInfo&sensTri=AscOperator&searchType=100&viewTaskName=SAQCatalogSearchResultView&pageSize=100");
         }
 
