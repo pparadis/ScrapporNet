@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -27,6 +28,28 @@ namespace ScrapporNet
                 Console.WriteLine("Code SAQ : " + wineDesc.Split(',')[3]);
                 Console.WriteLine("---------------------------------");
             }
+        }
+
+        public static void FetchWinePages2()
+        {
+            var doc = new HtmlDocument();
+            doc.Load(@"E:\wine\saq_500.html", Encoding.UTF8);
+            var winesNames = doc.DocumentNode.SelectNodes("//table[@class='recherche']/tbody/tr[*]/td[2]/a");
+            var WineDesc = doc.DocumentNode.SelectNodes("//table[@class='recherche']/tbody/tr[*]/td[2]/text()[2])");
+
+            //foreach (var info in wines)
+            //{
+
+            //var wineName = info.ChildNodes[1].InnerHtml.Trim();
+            //var wineDesc = info.ChildNodes[3].InnerHtml.Replace("\t", "").Replace("\n", "").Replace("\r", "").Replace("&nbsp;", " ").Trim();
+
+            //Console.WriteLine(HttpUtility.HtmlDecode(wineName));
+            //Console.WriteLine("Couleur : " + wineDesc.Split(',')[0]);
+            //Console.WriteLine("Nature : " + wineDesc.Split(',')[1]);
+            //Console.WriteLine("Format : " + wineDesc.Split(',')[2]);
+            //Console.WriteLine("Code SAQ : " + wineDesc.Split(',')[3]);
+            //Console.WriteLine("---------------------------------");
+            //}
         }
 
         public static void DownloadWinePages()
