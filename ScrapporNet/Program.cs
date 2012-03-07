@@ -14,11 +14,13 @@ namespace ScrapporNet
         static void Main(string[] args)
         {
             var s = new Stopwatch();
-            Console.WriteLine(s.Time(Fetch.FetchWinePages,100));
+            Console.WriteLine(s.Time(Fetch.FetchWinePages, 100));
+            Console.WriteLine(s.Time(Fetch.FetchWinePages2,100));
             //Fetch.FetchWinePages();
 
             //var documentStore = new DocumentStore { Url = "http://pascal-pc:8080" };
             //documentStore.Initialize();
+
 
             //string wineid;
 
