@@ -29,12 +29,12 @@ namespace ScrapporNet
                 var files = Directory.GetFiles(@"e:\wine\", "*.html").OrderBy(p => p.ToString(), new NaturalStringComparer());
                 foreach (var file in files)
                 {
-                    Console.WriteLine("File - " + file);
                     doc.Load(file, Encoding.UTF8);
                     var wines = doc.DocumentNode.SelectNodes("//table[@class='recherche']/tbody/tr[*]/td[2]");
                     foreach (var info in wines)
                     {
                         var wineName = info.ChildNodes[1].InnerHtml.Trim();
+                        var wineUrl = "http://www.saq.com/webapp/wcs/stores/servlet/" + info.ChildNodes[1].Attributes["href"].Value;
                         var wineDesc = info.ChildNodes[3].InnerHtml.Replace("\t", "").Replace("\n", "").Replace("\r", "").Replace("&nbsp;", " ").Trim();
 
                         var wineProperties = wineDesc.Split(',').ToList();
@@ -47,6 +47,7 @@ namespace ScrapporNet
                         var entity = new Wine
                                             {
                                                 Name = HttpUtility.HtmlDecode(wineName),
+                                                Url = wineUrl,
                                                 Color = wineProperties[0] ?? "",
                                                 Nature = wineProperties[1] ?? "",
                                                 Format = wineProperties[2] ?? "",
@@ -60,43 +61,6 @@ namespace ScrapporNet
             }
         }
 
-        //Console.WriteLine(HttpUtility.HtmlDecode(wineName));
-        //Console.WriteLine("Couleur : " + wineDesc.Split(',')[0]);
-        //Console.WriteLine("Nature : " + wineDesc.Split(',')[1]);
-        //Console.WriteLine("Format : " + wineDesc.Split(',')[2]);
-        //Console.WriteLine("Code SAQ : " + wineDesc.Split(',')[3]);
-        //Console.WriteLine("---------------------------------");
-
-
-        public static void FetchWinePages2()
-        {
-            var doc = new HtmlDocument();
-            doc.Load(@"E:\wine\saq_500.html", Encoding.UTF8);
-            var winesNames = doc.DocumentNode.SelectNodes("//table[@class='recherche']/tbody/tr[*]/td[2]/a");
-            var wineDesc = doc.DocumentNode.SelectNodes("//table[@class='recherche']/tbody/tr[*]/td[2]/text()[2]");
-
-            //Console.WriteLine("Wines names : " + winesNames.Count);
-            //Console.WriteLine("Wines WineDesc : " + wineDesc.Count);
-
-            if (wineDesc.Count != winesNames.Count)
-            {
-                return;
-            }
-
-            for (var i = 0; i < winesNames.Count; i++)
-            {
-                var wineName = winesNames[i].InnerHtml.Trim();
-                var wineDescContent = wineDesc[i].InnerHtml.Replace("\t", "").Replace("\n", "").Replace("\r", "").Replace("&nbsp;", " ").Trim();
-
-                //Console.WriteLine(HttpUtility.HtmlDecode(wineName));
-                //Console.WriteLine("Couleur : " + wineDescContent.Split(',')[0]);
-                //Console.WriteLine("Nature : " + wineDescContent.Split(',')[1]);
-                //Console.WriteLine("Format : " + wineDescContent.Split(',')[2]);
-                //Console.WriteLine("Code SAQ : " + wineDescContent.Split(',')[3]);
-                //Console.WriteLine("---------------------------------");
-            }
-        }
-
         public static void DownloadWinePages()
         {
             var web = new WebClient { Encoding = Encoding.UTF8 };
@@ -107,18 +71,11 @@ namespace ScrapporNet
                 Console.WriteLine(i);
 
                 var req = @"http://www.saq.com/webapp/wcs/stores/servlet/CatalogSearchResultView?storeId=10001&langId=-2&catalogId=10001&searchTerm=&resultCatEntryType=&beginIndex=" + i + "&tri=RechercheUCIProdDescAttributeInfo&sensTri=AscOperator&searchType=100&codeReseau=&categoryId=&viewTaskName=SAQCatalogSearchResultView&catalogVenteId=&pageSize=100";
-                try
-                {
-                    System.IO.File.WriteAllText(@"e:\wine\saq_" + i + ".html", web.DownloadString(req), Encoding.UTF8);
-                }
-                catch (WebException we)
-                {
-                    throw;
-                }
-
+                File.WriteAllText(@"e:\wine\saq_" + i + ".html", web.DownloadString(req), Encoding.UTF8);
             }
         }
     }
+
     [SuppressUnmanagedCodeSecurity]
     internal static class SafeNativeMethods
     {
