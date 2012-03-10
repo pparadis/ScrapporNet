@@ -6,6 +6,7 @@
         public string Name { get; set; }
         public string Color { get; set; }
         public string Format { get; set; }
+        public string Nature { get; set; }
 
         public override string ToString()
         {

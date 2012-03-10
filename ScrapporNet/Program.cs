@@ -14,26 +14,17 @@ namespace ScrapporNet
         static void Main(string[] args)
         {
             var s = new Stopwatch();
-            Console.WriteLine(s.Time(Fetch.FetchWinePages, 100));
-            Console.WriteLine(s.Time(Fetch.FetchWinePages2,100));
+            Fetch.FetchWinePages();
+            //Fetch.DownloadWinePages();
+            //Console.WriteLine(s.Time(Fetch.FetchWinePages, 1));
+            //Console.WriteLine(s.Time(Fetch.FetchWinePages2,100));
 
-            var documentStore = new DocumentStore
-                                    {
-                                        ConnectionStringName = "CS"
-                                    }.Initialize();
+            
 
 
             //string wineid;
 
-            ////using (var session = documentStore.OpenSession())
-            ////{
-            ////    var entity = new Wine { Name = "Allo" };
-
-            ////    session.Store(entity);
-            ////    session.SaveChanges();
-            ////    wineid = entity.Id;
-                
-            ////}
+            
 
             //using (var session = documentStore.OpenSession())
             //{
