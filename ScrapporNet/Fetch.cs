@@ -54,6 +54,7 @@ namespace ScrapporNet
                                                 Id = wineProperties[3] ?? ""
 
                                             };
+
                         session.Store(entity);
                     }
                 }
