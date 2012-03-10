@@ -6,7 +6,7 @@ using System.Text;
 
 namespace ScrapporNet
 {
-    public static class StopwatchExtensions
+    public static class Extensions
     {
         public static long Time(this Stopwatch sw, Action action, int iterations)
         {
@@ -19,6 +19,11 @@ namespace ScrapporNet
             sw.Stop();
 
             return sw.ElapsedMilliseconds;
+        }
+
+        public static int RoundOff(this int i)
+        {
+            return ((int)Math.Round(i / 10.0)) * 10;
         }
     }
 }

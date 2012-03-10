@@ -7,6 +7,7 @@ using System.Net;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Web;
 using HtmlAgilityPack;
@@ -16,7 +17,7 @@ namespace ScrapporNet
 {
     static class Fetch
     {
-        public static void FetchWinePages()
+        public static void ParseWinesFromSearchResults()
         {
             var documentStore = new DocumentStore
             {
@@ -35,6 +36,7 @@ namespace ScrapporNet
                     {
                         var wineName = info.ChildNodes[1].InnerHtml.Trim();
                         var wineUrl = "http://www.saq.com/webapp/wcs/stores/servlet/" + info.ChildNodes[1].Attributes["href"].Value;
+
                         var wineDesc = info.ChildNodes[3].InnerHtml.Replace("\t", "").Replace("\n", "").Replace("\r", "").Replace("&nbsp;", " ").Trim();
 
                         var wineProperties = wineDesc.Split(',').ToList();
@@ -62,7 +64,60 @@ namespace ScrapporNet
             }
         }
 
-        public static void DownloadWinePages()
+        public static void ParseWinesDetailsPages()
+        {
+
+        }
+
+        public static void FetchWinesDetailsPages()
+        {
+            var documentStore = new DocumentStore
+            {
+                ConnectionStringName = "CS"
+            }.Initialize();
+
+            using (var session = documentStore.OpenSession())
+            {
+                var wineList = session.Query<Wine>();
+
+                var winePageCount = (wineList.Count()/10).RoundOff();
+
+                for (var i = 0; i <= winePageCount; i++)
+                {
+                    Console.WriteLine("Fetching page " + i);
+                    var results = session
+                        .Query<Wine>()
+                        .Skip(i*10)
+                        .Take(10)
+                        .ToList();
+
+                    foreach (var wine in results)
+                    {
+                        Console.WriteLine(wine + " - " + wine.Url);
+                        Thread.Sleep(500);
+                        DownloadWinePages(wine);
+                    }
+                    Console.WriteLine("Fetch of page " + i + " done.");
+                    Thread.Sleep(2000);
+                }
+                
+                Console.WriteLine("Downloaded " + wineList.Count() + " wine pages.");
+            }
+        }
+
+        private static void DownloadWinePages(Wine wine)
+        {
+            var web = new WebClient { Encoding = Encoding.UTF8 };
+            web.Headers.Add("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; .NET CLR 1.0.3705;)");
+
+            var regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
+            var r = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
+            var wineFileName = r.Replace(wine.Name.Replace(" ", "_"), "");
+
+            File.WriteAllText(@"e:\wine\details\" + wineFileName + " .html", web.DownloadString(wine.Url), Encoding.UTF8);
+        }
+
+        public static void DownloadWineListPages()
         {
             var web = new WebClient { Encoding = Encoding.UTF8 };
             web.Headers.Add("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; .NET CLR 1.0.3705;)");
