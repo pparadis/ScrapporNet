@@ -17,6 +17,8 @@ namespace ScrapporNet
 {
     static class Fetch
     {
+        private const int PAGE_SIZE = 1024;
+
         public static void ParseWinesFromSearchResults()
         {
             var documentStore = new DocumentStore
@@ -78,25 +80,34 @@ namespace ScrapporNet
 
             using (var session = documentStore.OpenSession())
             {
+                //var x = session.Advanced.LuceneQuery<Wine>("Raven/DocumentsByEntityName")
+                // .Where("Tag:Wines")
+                // .Take(1024)
+                // .ToArray();
+
+                //x = x;
+                //return;
+
                 var wineList = session.Query<Wine>();
 
-                var winePageCount = (wineList.Count()/10).RoundOff();
+                var winePageCount = (wineList.Count().RoundOff() / PAGE_SIZE)/*.RoundOff()*/;
 
                 for (var i = 0; i <= winePageCount; i++)
                 {
                     Console.WriteLine("Fetching page " + i);
                     var results = session
                         .Query<Wine>()
-                        .Skip(i*10)
-                        .Take(10)
+                        .Skip(i*PAGE_SIZE)
+                        .Take(PAGE_SIZE)
                         .ToList();
 
-                    foreach (var wine in results)
+                    for (int j = 0; j < results.Count(); j++)
                     {
-                        Console.WriteLine(wine + " - " + wine.Url);
+                        Console.WriteLine("Page : " + i + " - Element # " + j + " - " + results[j]);
                         Thread.Sleep(500);
-                        DownloadWinePages(wine);
+                        DownloadWinePages(results[j]);
                     }
+                    
                     Console.WriteLine("Fetch of page " + i + " done.");
                     Thread.Sleep(2000);
                 }
@@ -114,7 +125,8 @@ namespace ScrapporNet
             var r = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
             var wineFileName = r.Replace(wine.Name.Replace(" ", "_"), "");
 
-            File.WriteAllText(@"e:\wine\details\" + wineFileName + " .html", web.DownloadString(wine.Url), Encoding.UTF8);
+            var file = web.DownloadString(wine.Url);
+            File.WriteAllText(@"e:\wine\details\" + wineFileName + "_" + wine.Id + " .html", file, Encoding.UTF8);
         }
 
         public static void DownloadWineListPages()

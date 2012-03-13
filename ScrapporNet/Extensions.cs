@@ -23,7 +23,7 @@ namespace ScrapporNet
 
         public static int RoundOff(this int i)
         {
-            return ((int)Math.Round(i / 10.0)) * 10;
+            return ((int)Math.Round(i / 1024.00)) * 1024;
         }
     }
 }
