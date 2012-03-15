@@ -80,17 +80,9 @@ namespace ScrapporNet
 
             using (var session = documentStore.OpenSession())
             {
-                //var x = session.Advanced.LuceneQuery<Wine>("Raven/DocumentsByEntityName")
-                // .Where("Tag:Wines")
-                // .Take(1024)
-                // .ToArray();
-
-                //x = x;
-                //return;
-
                 var wineList = session.Query<Wine>();
 
-                var winePageCount = (wineList.Count().RoundOff() / PAGE_SIZE)/*.RoundOff()*/;
+                var winePageCount = (wineList.Count().RoundOff() / PAGE_SIZE);
 
                 for (var i = 0; i <= winePageCount; i++)
                 {
@@ -141,6 +133,21 @@ namespace ScrapporNet
                 var req = @"http://www.saq.com/webapp/wcs/stores/servlet/CatalogSearchResultView?storeId=10001&langId=-2&catalogId=10001&searchTerm=&resultCatEntryType=&beginIndex=" + i + "&tri=RechercheUCIProdDescAttributeInfo&sensTri=AscOperator&searchType=100&codeReseau=&categoryId=&viewTaskName=SAQCatalogSearchResultView&catalogVenteId=&pageSize=100";
                 File.WriteAllText(@"e:\wine\saq_" + i + ".html", web.DownloadString(req), Encoding.UTF8);
             }
+        }
+
+
+        public static void ParseWineDetailPages()
+        {
+            var doc = new HtmlDocument();
+            doc.Load(@"E:\wine\details\M_Montepulciano_d'Abruzzo 2010_ 00518712 .html",Encoding.UTF8);
+            
+            var cup = doc.DocumentNode.SelectNodes("//table[@class='fiche_introduction transparent']");
+
+            //Name : doc.DocumentNode.SelectNodes("//table[@class='fiche_introduction transparent']/tr/td/h2")
+            //CUP : doc.DocumentNode.SelectNodes("//table[@class='fiche_introduction transparent']/tr/td/p/strong[2]")
+            //Extras infos : doc.DocumentNode.SelectNodes("/html/body/div/div[4]/div/table[2]/tr/td/table/tbody/tr/td")
+
+            Console.WriteLine(cup);
         }
     }
 
