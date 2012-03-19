@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 
-namespace ScrapporNet
+namespace ScrapporNet.Extensions
 {
-    public static class Extensions
+    public static class StopWatchExtensions
     {
         public static long Time(this Stopwatch sw, Action action, int iterations)
         {
