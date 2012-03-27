@@ -15,7 +15,7 @@ namespace ScrapporNet
         static void Main(string[] args)
         {
             //var s = new Stopwatch();
-            //Fetch.ParseWinesFromSearchResults();
+            //Parse.ParseWinesFromSearchResults();
             //Fetch.FetchWinesDetailsPages();
             Parse.ParseWineDetailPages();
             //Fetch.DownloadWinePages();

@@ -1,4 +1,5 @@
 ﻿using System;
+using HtmlAgilityPack;
 
 namespace ScrapporNet
 {
@@ -10,6 +11,11 @@ namespace ScrapporNet
         public string Format { get; set; }
         public string Nature { get; set; }
         public string Url { get; set; }
+
+        public string Cup
+        {
+            get; set;
+        }
 
         public override string ToString()
         {
