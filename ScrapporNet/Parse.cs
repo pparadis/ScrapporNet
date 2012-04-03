@@ -47,7 +47,7 @@ namespace ScrapporNet
                                          {
                                              Name = HttpUtility.HtmlDecode(wineName),
                                              Url = wineUrl,
-                                             Color = wineProperties[0].Trim() ?? "",
+                                             Category = wineProperties[0].Trim() ?? "",
                                              Nature = wineProperties[1].Trim() ?? "",
                                              Format = wineProperties[2].Trim() ?? "",
                                              Id = wineProperties[3].Trim() ?? ""
@@ -83,6 +83,7 @@ namespace ScrapporNet
                             select p).First();
 
                 wine.Cup = ParseCupCode(doc.DocumentNode);
+                wine.Color = ParseColor(doc.DocumentNode);
                 session.Store(wine);
                 session.SaveChanges();
             }
@@ -93,15 +94,15 @@ namespace ScrapporNet
 
         private static string ParseCupCode(HtmlNode document)
         {
-            var cupQuery = "//table[@class='fiche_introduction transparent']/tr/td/p/strong[2]";
+            const string cupQuery = "//table[@class='fiche_introduction transparent']/tr/td/p/strong[2]";
             var rawCup = document.SelectNodes(cupQuery).First().InnerHtml.CleanHtml();
             return rawCup.Split(':')[1].TrimStart();
         }
 
-        private static string ParseCategory(HtmlNode document)
+        private static string ParseColor(HtmlNode document)
         {
-            var query = "";
-            return "";
+            const string query = "//table[@id='description-base']/tbody/tr[2]/td[2]";
+            return document.SelectNodes(query).First().InnerHtml.CleanHtml();
         }
     }
 }
