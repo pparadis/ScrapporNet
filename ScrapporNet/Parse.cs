@@ -6,6 +6,8 @@ using System.Text;
 using System.Web;
 using HtmlAgilityPack;
 using Raven.Client.Document;
+using ScrapporNet.Entities;
+using ScrapporNet.Extensions;
 using ScrapporNet.Helpers;
 
 namespace ScrapporNet
@@ -32,7 +34,7 @@ namespace ScrapporNet
                         var wineName = info.ChildNodes[1].InnerHtml.Trim();
                         var wineUrl = "http://www.saq.com/webapp/wcs/stores/servlet/" + info.ChildNodes[1].Attributes["href"].Value;
 
-                        var wineDesc = info.ChildNodes[3].InnerHtml.Replace("\t", "").Replace("\n", "").Replace("\r", "").Replace("&nbsp;", " ").Trim();
+                        var wineDesc = info.ChildNodes[3].InnerHtml.CleanHtml();
 
                         var wineProperties = wineDesc.Split(',').ToList();
 
@@ -62,7 +64,7 @@ namespace ScrapporNet
         public static void ParseWineDetailPages()
         {
             var doc = new HtmlDocument();
-            var filename = @"E:\wine\details\M_Montepulciano_d'Abruzzo 2010_ 00518712 .html";
+            const string filename = @"E:\wine\details\M_Montepulciano_d'Abruzzo 2010_ 00518712 .html";
             doc.Load(filename, Encoding.UTF8);
 
             var documentStore = new DocumentStore
@@ -80,15 +82,26 @@ namespace ScrapporNet
                             where p.Id == wineId
                             select p).First();
 
-                var rawCup = doc.DocumentNode.SelectNodes("//table[@class='fiche_introduction transparent']/tr/td/p/strong[2]").First().InnerHtml.Replace("\t", "").Replace("\n", "").Replace("\r", "").Replace("&nbsp;", " ").Trim();
-                wine.Cup = rawCup.Split(':')[1].TrimStart();
+                wine.Cup = ParseCupCode(doc.DocumentNode);
                 session.Store(wine);
                 session.SaveChanges();
             }
 
             //Name : doc.DocumentNode.SelectNodes("//table[@class='fiche_introduction transparent']/tr/td/h2")
-            //CUP : 
             //Extras infos : doc.DocumentNode.SelectNodes("/html/body/div/div[4]/div/table[2]/tr/td/table/tbody/tr/td")
+        }
+
+        private static string ParseCupCode(HtmlNode document)
+        {
+            var cupQuery = "//table[@class='fiche_introduction transparent']/tr/td/p/strong[2]";
+            var rawCup = document.SelectNodes(cupQuery).First().InnerHtml.CleanHtml();
+            return rawCup.Split(':')[1].TrimStart();
+        }
+
+        private static string ParseCategory(HtmlNode document)
+        {
+            var query = "";
+            return "";
         }
     }
 }

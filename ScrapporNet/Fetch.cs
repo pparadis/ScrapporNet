@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Raven.Client.Document;
+using ScrapporNet.Entities;
 using ScrapporNet.Extensions;
 
 namespace ScrapporNet

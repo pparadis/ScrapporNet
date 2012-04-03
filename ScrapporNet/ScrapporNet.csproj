@@ -71,6 +71,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensions\StopWatchExtensions.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Fetch.cs" />
     <Compile Include="Helpers\NaturalFileInfoNameComparer.cs" />
     <Compile Include="Helpers\NaturalStringComparer.cs" />
@@ -78,7 +79,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Helpers\SafeNativeMethods.cs" />
-    <Compile Include="Wine.cs" />
+    <Compile Include="Entities\Wine.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
