@@ -84,6 +84,7 @@ namespace ScrapporNet
 
                 wine.Cup = ParseCupCode(doc.DocumentNode);
                 wine.Color = ParseColor(doc.DocumentNode);
+                wine.Country = ParseCountry(doc.DocumentNode);
                 session.Store(wine);
                 session.SaveChanges();
             }
@@ -102,6 +103,12 @@ namespace ScrapporNet
         private static string ParseColor(HtmlNode document)
         {
             const string query = "//table[@id='description-base']/tbody/tr[2]/td[2]";
+            return document.SelectNodes(query).First().InnerHtml.CleanHtml();
+        }
+
+        private static string ParseCountry(HtmlNode document)
+        {
+            const string query = "/html[1]/body[1]/div[1]/div[4]/div[1]/table[2]/tr[1]/td[1]/table[1]/tbody/tr[1]/td[2]";
             return document.SelectNodes(query).First().InnerHtml.CleanHtml();
         }
     }
