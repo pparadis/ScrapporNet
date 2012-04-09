@@ -85,6 +85,11 @@ namespace ScrapporNet
                 wine.Cup = ParseCupCode(doc.DocumentNode);
                 wine.Color = ParseColor(doc.DocumentNode);
                 wine.Country = ParseCountry(doc.DocumentNode);
+                wine.Region = ParseRegion(doc.DocumentNode);
+                wine.Appellation = ParseAppellation(doc.DocumentNode);
+                wine.Fournisseur = ParseFournisseur(doc.DocumentNode);
+                wine.AlcoholRate = ParseAlcohol(doc.DocumentNode);
+                wine.Price = ParsePrice(doc.DocumentNode);
                 session.Store(wine);
                 session.SaveChanges();
             }
@@ -92,11 +97,11 @@ namespace ScrapporNet
             //Name : doc.DocumentNode.SelectNodes("//table[@class='fiche_introduction transparent']/tr/td/h2")
             //Extras infos : doc.DocumentNode.SelectNodes("/html/body/div/div[4]/div/table[2]/tr/td/table/tbody/tr/td")
         }
-
+        
         private static string ParseCupCode(HtmlNode document)
         {
-            const string cupQuery = "//table[@class='fiche_introduction transparent']/tr/td/p/strong[2]";
-            var rawCup = document.SelectNodes(cupQuery).First().InnerHtml.CleanHtml();
+            const string query = "//table[@class='fiche_introduction transparent']/tr/td/p/strong[2]";
+            var rawCup = document.SelectNodes(query).First().InnerHtml.CleanHtml();
             return rawCup.Split(':')[1].TrimStart();
         }
 
@@ -109,6 +114,36 @@ namespace ScrapporNet
         private static string ParseCountry(HtmlNode document)
         {
             const string query = "/html[1]/body[1]/div[1]/div[4]/div[1]/table[2]/tr[1]/td[1]/table[1]/tbody/tr[1]/td[2]";
+            return document.SelectNodes(query).First().InnerHtml.CleanHtml();
+        }
+
+        private static string ParseRegion(HtmlNode document)
+        {
+            const string query = "/html[1]/body[1]/div[1]/div[4]/div[1]/table[2]/tr[1]/td[1]/table[1]/tbody/tr[2]/td[2]";
+            return document.SelectNodes(query).First().InnerHtml.CleanHtml();
+        }
+
+        private static string ParseAppellation(HtmlNode document)
+        {
+            const string query = "/html[1]/body[1]/div[1]/div[4]/div[1]/table[2]/tr[1]/td[1]/table[1]/tbody/tr[3]/td[2]";
+            return document.SelectNodes(query).First().InnerHtml.CleanHtml();
+        }
+
+        private static string ParseFournisseur(HtmlNode document)
+        {
+            const string query = "/html[1]/body[1]/div[1]/div[4]/div[1]/table[2]/tr[1]/td[1]/table[1]/tbody/tr[4]/td[2]";
+            return document.SelectNodes(query).First().InnerHtml.CleanHtml();
+        }
+
+        private static string ParseAlcohol(HtmlNode document)
+        {
+            const string query = "/html[1]/body[1]/div[1]/div[4]/div[1]/table[2]/tr[1]/td[1]/table[1]/tbody/tr[5]/td[2]";
+            return document.SelectNodes(query).First().InnerHtml.CleanHtml();
+        }
+
+        private static string ParsePrice(HtmlNode document)
+        {
+            const string query = "/html[1]/body[1]/div[1]/div[4]/div[1]/table[1]/tr[1]/td[3]/p[1]/span[1]";
             return document.SelectNodes(query).First().InnerHtml.CleanHtml();
         }
     }

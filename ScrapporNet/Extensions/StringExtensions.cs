@@ -9,7 +9,7 @@ namespace ScrapporNet.Extensions
     {
         public static string CleanHtml(this string stringToClean)
         {
-            return stringToClean.Replace("\t", "").Replace("\n", "").Replace("\r", "").Replace("&nbsp;", " ").Trim();
+            return stringToClean.Replace("\t", "").Replace("\n", "").Replace("\r", "").Replace("&nbsp;", " ").Replace("&#039;","'").Trim();
         }
     }
 }

@@ -2,6 +2,7 @@
 {
     public class Wine
     {
+        
         public string Name { get; set; }
 
         public string Id { get; set; }
@@ -17,6 +18,8 @@
         public string Appellation { get; set; }
         public string Fournisseur { get; set; }
         public string AlcoholRate { get; set; }
+
+        public string Price { get; set; }
 
         public string TastingYear { get; set; }
         public string WineFamily { get; set; }
