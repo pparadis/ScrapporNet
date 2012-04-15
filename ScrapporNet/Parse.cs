@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Web;
 using HtmlAgilityPack;
+using Raven.Client;
 using Raven.Client.Document;
 using ScrapporNet.Entities;
 using ScrapporNet.Extensions;
@@ -14,18 +15,21 @@ namespace ScrapporNet
 {
     public class Parse
     {
+        private IDocumentStore _documentStore;
+        public Parse()
+        {
+            _documentStore = new DocumentStore
+            {
+                ConnectionStringName = "CS"
+            }.Initialize();
+        }
+
         public void ParseWinesFromSearchResults()
         {
-            var documentStore = new DocumentStore
-                                    {
-                                        ConnectionStringName = "CS"
-                                    }.Initialize();
-
-
-            var doc = new HtmlDocument();
             var files = Directory.GetFiles(@"e:\wine\", "*.html").OrderBy(p => p.ToString(), new NaturalStringComparer());
             foreach (var file in files)
             {
+                var doc = new HtmlDocument();
                 doc.Load(file, Encoding.UTF8);
                 var wineResultsElementList = GetWineResultsElementList(doc);
                 foreach (var wineResultElement in wineResultsElementList)
@@ -39,7 +43,7 @@ namespace ScrapporNet
                     }
 
                     var entity = GetWine(wineResultElement);
-                    using (var session = documentStore.OpenSession())
+                    using (var session = _documentStore.OpenSession())
                     {
                         session.Store(entity);
                         session.SaveChanges();
