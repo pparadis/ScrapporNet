@@ -47,6 +47,10 @@ namespace ScrapporNet
                 }
             }
         }
+        private bool ProductIsInvalid(string[] elementDescriptionList)
+        {
+            return elementDescriptionList.Length < 3 && elementDescriptionList[2].Trim() == "00002008";
+        }
 
         private Wine GetWine(HtmlNode wineResultElement)
         {
@@ -67,19 +71,9 @@ namespace ScrapporNet
                        };
         }
 
-        private bool ProductIsInvalid(string[] elementDescriptionList)
+        private List<HtmlNode> GetWineResultsElementList(HtmlDocument doc)
         {
-            return elementDescriptionList.Length < 3 && elementDescriptionList[2].Trim() == "00002008";
-        }
-
-        private string ParseWineDescription(HtmlNode info)
-        {
-            return info.ChildNodes[3].InnerHtml.CleanHtml();
-        }
-
-        private string ParseWineUrl(HtmlNode info)
-        {
-            return "http://www.saq.com/webapp/wcs/stores/servlet/" + info.ChildNodes[1].Attributes["href"].Value;
+            return doc.DocumentNode.SelectNodes("//table[@class='recherche']/tbody/tr[*]/td[2]").ToList();
         }
 
         private string ParseWineName(HtmlNode info)
@@ -87,12 +81,15 @@ namespace ScrapporNet
             return info.ChildNodes[1].InnerHtml.Trim();
         }
 
-        private List<HtmlNode> GetWineResultsElementList(HtmlDocument doc)
+        private string ParseWineUrl(HtmlNode info)
         {
-            return doc.DocumentNode.SelectNodes("//table[@class='recherche']/tbody/tr[*]/td[2]").ToList();
+            return "http://www.saq.com/webapp/wcs/stores/servlet/" + info.ChildNodes[1].Attributes["href"].Value;
         }
 
-
+        private string ParseWineDescription(HtmlNode info)
+        {
+            return info.ChildNodes[3].InnerHtml.CleanHtml();
+        }
 
         public static void ParseWineDetailPages()
         {
