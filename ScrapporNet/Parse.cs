@@ -21,35 +21,24 @@ namespace ScrapporNet
                                         ConnectionStringName = "CS"
                                     }.Initialize();
 
-            
-                var doc = new HtmlDocument();
-                var files = Directory.GetFiles(@"e:\wine\", "*.html").OrderBy(p => p.ToString(), new NaturalStringComparer());
-                foreach (var file in files)
+
+            var doc = new HtmlDocument();
+            var files = Directory.GetFiles(@"e:\wine\", "*.html").OrderBy(p => p.ToString(), new NaturalStringComparer());
+            foreach (var file in files)
+            {
+                doc.Load(file, Encoding.UTF8);
+                var wineResultsElementList = GetWineResultsElementList(doc);
+                foreach (var wineResultElement in wineResultsElementList)
                 {
-                    doc.Load(file, Encoding.UTF8);
-                    var getWineResultsElementList = GetWineResultsElementList(doc);
-                    foreach (var wineResultElement in getWineResultsElementList)
+                    var wineDesc = ParseWineDescription(wineResultElement);
+                    var wineProperties = wineDesc.Split(',');
+
+                    if (ProductIsInvalid(wineProperties))
                     {
-                        var wineName = ParseWineName(wineResultElement);
-                        var wineUrl = ParseWineUrl(wineResultElement);
-                        var wineDesc = ParseWineDescription(wineResultElement);
-                        var wineProperties = wineDesc.Split(',');
+                        continue;
+                    }
 
-                        if (ProductIsInvalid(wineProperties))
-                        {
-                            continue;
-                        }
-
-                        var entity = new Wine
-                                         {
-                                             Name = HttpUtility.HtmlDecode(wineName),
-                                             Url = wineUrl,
-                                             Category = wineProperties[0].Trim() ?? "",
-                                             Nature = wineProperties[1].Trim() ?? "",
-                                             Format = wineProperties[2].Trim() ?? "",
-                                             Id = wineProperties[3].Trim() ?? ""
-
-                                         };
+                    var entity = GetWine(wineResultElement);
                     using (var session = documentStore.OpenSession())
                     {
                         session.Store(entity);
@@ -57,6 +46,25 @@ namespace ScrapporNet
                     }
                 }
             }
+        }
+
+        private Wine GetWine(HtmlNode wineResultElement)
+        {
+            var wineName = ParseWineName(wineResultElement);
+            var wineUrl = ParseWineUrl(wineResultElement);
+            var wineDesc = ParseWineDescription(wineResultElement);
+            var wineProperties = wineDesc.Split(',');
+
+            return new Wine
+                       {
+                           Name = HttpUtility.HtmlDecode(wineName),
+                           Url = wineUrl,
+                           Category = wineProperties[0].Trim() ?? "",
+                           Nature = wineProperties[1].Trim() ?? "",
+                           Format = wineProperties[2].Trim() ?? "",
+                           Id = wineProperties[3].Trim() ?? ""
+
+                       };
         }
 
         private bool ProductIsInvalid(string[] elementDescriptionList)
