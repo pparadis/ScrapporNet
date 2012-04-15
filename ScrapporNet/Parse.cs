@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -26,63 +27,80 @@ namespace ScrapporNet
 
         public void ParseWinesFromSearchResults()
         {
-            var files = Directory.GetFiles(@"e:\wine\", "*.html").OrderBy(p => p.ToString(), new NaturalStringComparer());
+            var files = GetSearchResultPageList(@"e:\wine\", "*.html");
             foreach (var file in files)
             {
                 var doc = new HtmlDocument();
                 doc.Load(file, Encoding.UTF8);
+
                 var wineResultsElementList = GetWineResultsElementList(doc);
                 foreach (var wineResultElement in wineResultsElementList)
                 {
-                    var wineDesc = ParseWineDescription(wineResultElement);
-                    var wineProperties = wineDesc.Split(',');
+                    var entity = GetWine(wineResultElement);
 
-                    if (ProductIsInvalid(wineProperties))
+                    if (entity == null)
                     {
                         continue;
                     }
 
-                    var entity = GetWine(wineResultElement);
-                    using (var session = _documentStore.OpenSession())
-                    {
-                        session.Store(entity);
-                        session.SaveChanges();
-                    }
+                    SaveWine(entity);
                 }
             }
         }
-        private bool ProductIsInvalid(string[] elementDescriptionList)
+
+        protected IOrderedEnumerable<string> GetSearchResultPageList(string path, string file)
         {
-            return elementDescriptionList.Length < 3 && elementDescriptionList[2].Trim() == "00002008";
+            return Directory.GetFiles(path, file).OrderBy(p => p.ToString(), new NaturalStringComparer());
         }
 
-        private Wine GetWine(HtmlNode wineResultElement)
-        {
-            var wineName = ParseWineName(wineResultElement);
-            var wineUrl = ParseWineUrl(wineResultElement);
-            var wineDesc = ParseWineDescription(wineResultElement);
-            var wineProperties = wineDesc.Split(',');
-
-            return new Wine
-                       {
-                           Name = HttpUtility.HtmlDecode(wineName),
-                           Url = wineUrl,
-                           Category = wineProperties[0].Trim() ?? "",
-                           Nature = wineProperties[1].Trim() ?? "",
-                           Format = wineProperties[2].Trim() ?? "",
-                           Id = wineProperties[3].Trim() ?? ""
-
-                       };
-        }
-
-        private List<HtmlNode> GetWineResultsElementList(HtmlDocument doc)
+        protected List<HtmlNode> GetWineResultsElementList(HtmlDocument doc)
         {
             return doc.DocumentNode.SelectNodes("//table[@class='recherche']/tbody/tr[*]/td[2]").ToList();
         }
 
+        protected IProduct GetWine(HtmlNode wineResultElement)
+        {
+            var wineName = ParseWineName(wineResultElement);
+            if(string.IsNullOrEmpty(wineName))
+            {
+                return null;
+            }
+
+            var wineUrl = ParseWineUrl(wineResultElement);
+            if (string.IsNullOrEmpty(wineUrl))
+            {
+                return null;
+            }
+
+
+            var wineDescription = ParseWineDescription(wineResultElement);
+            if (wineDescription.Length <= 3)
+            {
+                return null;
+            }
+
+            if (wineDescription[2] == "00002008")
+            {
+                return null;
+            }
+
+            return new Wine
+            {
+                Name = HttpUtility.HtmlDecode(wineName),
+                Url = wineUrl,
+                Category = wineDescription[0].Trim() ?? "",
+                Nature = wineDescription[1].Trim() ?? "",
+                Format = wineDescription[2].Trim() ?? "",
+                Id = wineDescription[3].Trim() ?? ""
+
+            };
+        }
+
         private string ParseWineName(HtmlNode info)
         {
-            return info.ChildNodes[1].InnerHtml.Trim();
+            var wineName = info.ChildNodes[1].InnerHtml.Trim();
+            Debug.Assert(string.IsNullOrEmpty(wineName));
+            return wineName;
         }
 
         private string ParseWineUrl(HtmlNode info)
@@ -90,10 +108,21 @@ namespace ScrapporNet
             return "http://www.saq.com/webapp/wcs/stores/servlet/" + info.ChildNodes[1].Attributes["href"].Value;
         }
 
-        private string ParseWineDescription(HtmlNode info)
+        private string[] ParseWineDescription(HtmlNode info)
         {
-            return info.ChildNodes[3].InnerHtml.CleanHtml();
+            return info.ChildNodes[3].InnerHtml.CleanHtml().Split(',');
         }
+
+        protected void SaveWine(IProduct product)
+        {
+            using (var session = _documentStore.OpenSession())
+            {
+                session.Store(product);
+                session.SaveChanges();
+            }
+        }
+
+
 
         public static void ParseWineDetailPages()
         {

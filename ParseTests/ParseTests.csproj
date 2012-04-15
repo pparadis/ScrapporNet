@@ -44,6 +44,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SearchPageTests.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ScrapporNet\ScrapporNet.csproj">
+      <Project>{91AF658F-A1A0-4ECA-999F-C0206D63015C}</Project>
+      <Name>ScrapporNet</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
