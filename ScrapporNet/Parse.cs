@@ -12,33 +12,30 @@ using ScrapporNet.Helpers;
 
 namespace ScrapporNet
 {
-    public static class Parse
+    public class Parse
     {
-        public static void ParseWinesFromSearchResults()
+        public void ParseWinesFromSearchResults()
         {
             var documentStore = new DocumentStore
                                     {
                                         ConnectionStringName = "CS"
                                     }.Initialize();
 
-            using (var session = documentStore.OpenSession())
-            {
+            
                 var doc = new HtmlDocument();
                 var files = Directory.GetFiles(@"e:\wine\", "*.html").OrderBy(p => p.ToString(), new NaturalStringComparer());
                 foreach (var file in files)
                 {
                     doc.Load(file, Encoding.UTF8);
-                    var wines = doc.DocumentNode.SelectNodes("//table[@class='recherche']/tbody/tr[*]/td[2]");
-                    foreach (var info in wines)
+                    var getWineResultsElementList = GetWineResultsElementList(doc);
+                    foreach (var wineResultElement in getWineResultsElementList)
                     {
-                        var wineName = info.ChildNodes[1].InnerHtml.Trim();
-                        var wineUrl = "http://www.saq.com/webapp/wcs/stores/servlet/" + info.ChildNodes[1].Attributes["href"].Value;
+                        var wineName = ParseWineName(wineResultElement);
+                        var wineUrl = ParseWineUrl(wineResultElement);
+                        var wineDesc = ParseWineDescription(wineResultElement);
+                        var wineProperties = wineDesc.Split(',');
 
-                        var wineDesc = info.ChildNodes[3].InnerHtml.CleanHtml();
-
-                        var wineProperties = wineDesc.Split(',').ToList();
-
-                        if (wineProperties[2].Trim() == "00002008")
+                        if (ProductIsInvalid(wineProperties))
                         {
                             continue;
                         }
@@ -53,13 +50,41 @@ namespace ScrapporNet
                                              Id = wineProperties[3].Trim() ?? ""
 
                                          };
-
+                    using (var session = documentStore.OpenSession())
+                    {
                         session.Store(entity);
+                        session.SaveChanges();
                     }
                 }
-                session.SaveChanges();
             }
         }
+
+        private bool ProductIsInvalid(string[] elementDescriptionList)
+        {
+            return elementDescriptionList.Length < 3 && elementDescriptionList[2].Trim() == "00002008";
+        }
+
+        private string ParseWineDescription(HtmlNode info)
+        {
+            return info.ChildNodes[3].InnerHtml.CleanHtml();
+        }
+
+        private string ParseWineUrl(HtmlNode info)
+        {
+            return "http://www.saq.com/webapp/wcs/stores/servlet/" + info.ChildNodes[1].Attributes["href"].Value;
+        }
+
+        private string ParseWineName(HtmlNode info)
+        {
+            return info.ChildNodes[1].InnerHtml.Trim();
+        }
+
+        private List<HtmlNode> GetWineResultsElementList(HtmlDocument doc)
+        {
+            return doc.DocumentNode.SelectNodes("//table[@class='recherche']/tbody/tr[*]/td[2]").ToList();
+        }
+
+
 
         public static void ParseWineDetailPages()
         {
@@ -74,13 +99,14 @@ namespace ScrapporNet
 
             var wineNameParts = filename.Split('_');
 
-            var wineId = wineNameParts[wineNameParts.Length-1].Replace(".html","").Trim();
+            var wineId = wineNameParts[wineNameParts.Length - 1].Replace(".html", "").Trim();
 
             using (var session = documentStore.OpenSession())
             {
-                var wine = (from p in session.Query<Wine>()
-                            where p.Id == wineId
-                            select p).First();
+                var wine = (session
+                                .Query<Wine>()
+                                .Where(p => p.Id == wineId))
+                                .First();
 
                 wine.Cup = ParseCupCode(doc.DocumentNode);
                 wine.Color = ParseColor(doc.DocumentNode);
@@ -97,7 +123,7 @@ namespace ScrapporNet
             //Name : doc.DocumentNode.SelectNodes("//table[@class='fiche_introduction transparent']/tr/td/h2")
             //Extras infos : doc.DocumentNode.SelectNodes("/html/body/div/div[4]/div/table[2]/tr/td/table/tbody/tr/td")
         }
-        
+
         private static string ParseCupCode(HtmlNode document)
         {
             const string query = "//table[@class='fiche_introduction transparent']/tr/td/p/strong[2]";

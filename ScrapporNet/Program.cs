@@ -17,9 +17,36 @@ namespace ScrapporNet
             //var s = new Stopwatch();
             //Parse.ParseWinesFromSearchResults();
             //Fetch.FetchWinesDetailsPages();
-            Parse.ParseWineDetailPages();
+            Parse
+                .ParseWineDetailPages();
             //Fetch.DownloadWinePages();
             Console.ReadLine();
         }
     }
+
+    class Configuration
+    {
+        private String _server { get; set; }
+        private int _timeout { get; set; }
+        private int _port { get; set; }
+
+        public Configuration SetPort(int port)
+        {
+            _port = port;
+            return this;
+        }
+
+        public Configuration SetServer(String server)
+        {
+            _server = server;
+            return this;
+        }
+
+        public Configuration SetTimeout(int timeout)
+        {
+            _timeout = timeout;
+            return this;
+        }
+    }
+
 }
