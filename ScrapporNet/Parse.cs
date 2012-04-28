@@ -8,6 +8,7 @@ using System.Web;
 using HtmlAgilityPack;
 using Raven.Client;
 using Raven.Client.Document;
+using Raven.Json.Linq;
 using ScrapporNet.Entities;
 using ScrapporNet.Extensions;
 using ScrapporNet.Helpers;
@@ -16,18 +17,17 @@ namespace ScrapporNet
 {
     public class Parse
     {
-        private IDocumentStore _documentStore;
-        public Parse()
+        protected IDocumentStore DocumentStore { get; set;}
+        public Parse(IDocumentStore documentStore)
         {
-            _documentStore = new DocumentStore
-            {
-                ConnectionStringName = "CS"
-            }.Initialize();
+            DocumentStore = documentStore;
         }
 
         public void ParseWinesFromSearchResults()
         {
             var files = GetSearchResultPageList(@"e:\wine\", "*.html");
+
+            var docList = new List<IProduct>();
             foreach (var file in files)
             {
                 var doc = new HtmlDocument();
@@ -42,13 +42,13 @@ namespace ScrapporNet
                     {
                         continue;
                     }
-
-                    SaveWine(entity);
+                    docList.Add(entity);
                 }
             }
+            SaveWine(docList);
         }
 
-        protected IOrderedEnumerable<string> GetSearchResultPageList(string path, string file)
+        private static IEnumerable<string> GetSearchResultPageList(string path, string file)
         {
             return Directory.GetFiles(path, file).OrderBy(p => p.ToString(), new NaturalStringComparer());
         }
@@ -99,7 +99,6 @@ namespace ScrapporNet
         private string ParseWineName(HtmlNode info)
         {
             var wineName = info.ChildNodes[1].InnerHtml.Trim();
-            Debug.Assert(string.IsNullOrEmpty(wineName));
             return wineName;
         }
 
@@ -113,11 +112,11 @@ namespace ScrapporNet
             return info.ChildNodes[3].InnerHtml.CleanHtml().Split(',');
         }
 
-        protected void SaveWine(IProduct product)
+        protected void SaveWine(List<IProduct> product)
         {
-            using (var session = _documentStore.OpenSession())
+            using (var session = DocumentStore.OpenSession())
             {
-                session.Store(product);
+                product.ForEach(session.Store);
                 session.SaveChanges();
             }
         }
