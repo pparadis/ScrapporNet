@@ -37,7 +37,7 @@ namespace ParseTests
         {
             using (var session = docStore.OpenSession())
             {
-                var item = session.Query<Wine>().Where(p => p.Id == "00518712");
+                var item = session.Query<Wine>().First(p => p.Id == "00518712");
                 Assert.IsNotNull(item);
             }
         }
