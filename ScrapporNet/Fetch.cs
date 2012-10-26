@@ -25,7 +25,6 @@ namespace ScrapporNet
             using (var session = documentStore.OpenSession())
             {
                 var wineList = session.Query<Wine>();
-
                 var winePageCount = (wineList.Count().RoundOff() / PAGE_SIZE);
 
                 for (var i = 0; i <= winePageCount; i++)

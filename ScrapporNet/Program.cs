@@ -17,14 +17,17 @@ namespace ScrapporNet
     {
         static void Main(string[] args)
         {
-            //var s = new Stopwatch();
-            //Fetch.FetchWinesDetailsPages();
-            //Parse
-                //.ParseWineDetailPages()
-                //.ParseWinesFromSearchResults();
+            var s = new Stopwatch();
+            Fetch.DownloadWineListPages();
+            Fetch.FetchWinesDetailsPages();
 
-            new Parse(new DocumentStore { ConnectionStringName = "CS" }.Initialize()).ParseWinesFromSearchResults();
-            //Fetch.DownloadWinePages();
+            var p = new Parse(new DocumentStore
+                    {
+                        ConnectionStringName = "CS"
+                    }.Initialize());
+
+            p.ParseWinesFromSearchResults();
+            
             Console.ReadLine();
         }
     }
