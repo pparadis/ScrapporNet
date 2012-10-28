@@ -18,17 +18,33 @@ namespace ScrapporNet
         static void Main(string[] args)
         {
             var s = new Stopwatch();
-            Fetch.DownloadWineListPages();
-            Fetch.FetchWinesDetailsPages();
+            var path = SetupFolders();
+
+
+            var f = new Fetch(path);
+
+            f.DownloadWineListPages();
+
+            
 
             var p = new Parse(new DocumentStore
                     {
                         ConnectionStringName = "CS"
-                    }.Initialize());
+                    }.Initialize(), path);
 
             p.ParseWinesFromSearchResults();
-            
+
+            f.FetchWinesDetailsPages();
+
             Console.ReadLine();
+        }
+
+        private static string SetupFolders()
+        {
+            var dateTimeTimeStamp = "201210272324114400" /*DateTime.Now.GetTimestamp()*/;
+            System.IO.Directory.CreateDirectory(@"e:\Wine\" + dateTimeTimeStamp + @"\details\");
+            //return (@"e:\Wine\" + dateTimeTimeStamp + @"\");
+            return (@"e:\Wine\" + dateTimeTimeStamp + @"\");
         }
     }
 }

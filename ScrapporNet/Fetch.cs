@@ -11,11 +11,36 @@ using ScrapporNet.Extensions;
 
 namespace ScrapporNet
 {
-    static class Fetch
+    public class Fetch
     {
         private const int PAGE_SIZE = 1024;
+        private string FilePath { get; set; }
 
-        public static void FetchWinesDetailsPages()
+        public Fetch(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath))
+            {
+                SetupFolders();
+            } 
+            else
+            {
+                FilePath = filePath;
+            }
+        }
+
+        public Fetch()
+        {
+            SetupFolders();
+        }
+
+        private void SetupFolders()
+        {
+            var dateTimeTimeStamp = DateTime.Now.GetTimestamp();
+            System.IO.Directory.CreateDirectory(@"e:\Wine\" + dateTimeTimeStamp);
+            FilePath = (@"e:\Wine\" + dateTimeTimeStamp + @"\");
+        }
+
+        public void FetchWinesDetailsPages()
         {
             var documentStore = new DocumentStore
             {
@@ -51,7 +76,7 @@ namespace ScrapporNet
             }
         }
 
-        private static void DownloadWinePages(Wine wine)
+        private void DownloadWinePages(Wine wine)
         {
             var web = new WebClient { Encoding = Encoding.UTF8 };
             web.Headers.Add("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; .NET CLR 1.0.3705;)");
@@ -61,10 +86,10 @@ namespace ScrapporNet
             var wineFileName = r.Replace(wine.Name.Replace(" ", "_"), "");
 
             var file = web.DownloadString(wine.Url);
-            File.WriteAllText(@"e:\wine\details\" + wineFileName + "_" + wine.Id + " .html", file, Encoding.UTF8);
+            File.WriteAllText(FilePath  + @"details\" + wineFileName + "_" + wine.Id + " .html", file, Encoding.UTF8);
         }
 
-        public static void DownloadWineListPages()
+        public void DownloadWineListPages()
         {
             var web = new WebClient { Encoding = Encoding.UTF8 };
             web.Headers.Add("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; .NET CLR 1.0.3705;)");
@@ -74,7 +99,7 @@ namespace ScrapporNet
                 Console.WriteLine(i);
 
                 var req = @"http://www.saq.com/webapp/wcs/stores/servlet/CatalogSearchResultView?storeId=10001&langId=-2&catalogId=10001&searchTerm=&resultCatEntryType=&beginIndex=" + i + "&tri=RechercheUCIProdDescAttributeInfo&sensTri=AscOperator&searchType=100&codeReseau=&categoryId=&viewTaskName=SAQCatalogSearchResultView&catalogVenteId=&pageSize=100";
-                File.WriteAllText(@"e:\wine\saq_" + i + ".html", web.DownloadString(req), Encoding.UTF8);
+                File.WriteAllText(FilePath + "saq_" + i + ".html", web.DownloadString(req), Encoding.UTF8);
             }
         }
     }

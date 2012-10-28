@@ -17,15 +17,38 @@ namespace ScrapporNet
 {
     public class Parse
     {
-        protected IDocumentStore DocumentStore { get; set;}
-        public Parse(IDocumentStore documentStore)
+        private IDocumentStore DocumentStore { get; set;}
+        private string FilePath { get; set; }
+
+        public Parse(IDocumentStore documentStore, string filePath)
         {
             DocumentStore = documentStore;
+
+            if (string.IsNullOrEmpty(filePath))
+            {
+                SetupFolders();
+            }
+            else
+            {
+                FilePath = filePath;
+            }
+        }
+
+        public Parse()
+        {
+            SetupFolders();
+        }
+
+        private void SetupFolders()
+        {
+            var dateTimeTimeStamp = DateTime.Now.GetTimestamp();
+            System.IO.Directory.CreateDirectory(@"e:\Wine\" + dateTimeTimeStamp);
+            FilePath = (@"e:\Wine\" + dateTimeTimeStamp + @"\");
         }
 
         public void ParseWinesFromSearchResults()
         {
-            var files = GetSearchResultPageList(@"e:\wine\", "*.html");
+            var files = GetSearchResultPageList(FilePath, "*.html");
 
             var docList = new List<IProduct>();
             foreach (var file in files)
