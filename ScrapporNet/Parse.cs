@@ -48,7 +48,7 @@ namespace ScrapporNet
 
         public void ParseWinesFromSearchResults()
         {
-            var files = GetSearchResultPageList(FilePath, "*.html");
+            var files = GetFileList(FilePath, "*.html");
 
             var docList = new List<IProduct>();
             foreach (var file in files)
@@ -61,7 +61,7 @@ namespace ScrapporNet
                 {
                     var entity = GetWine(wineResultElement);
 
-                    if (entity == null)
+                    if (entity == null || entity.Category == "Whisky")
                     {
                         continue;
                     }
@@ -71,7 +71,7 @@ namespace ScrapporNet
             SaveWine(docList);
         }
 
-        private static IEnumerable<string> GetSearchResultPageList(string path, string file)
+        private static IEnumerable<string> GetFileList(string path, string file)
         {
             return Directory.GetFiles(path, file).OrderBy(p => p.ToString(), new NaturalStringComparer());
         }
@@ -146,40 +146,52 @@ namespace ScrapporNet
 
 
 
-        public static void ParseWineDetailPages()
+        public void ParseWineDetailPages()
         {
             var doc = new HtmlDocument();
-            const string filename = @"E:\wine\details\M_Montepulciano_d'Abruzzo 2010_ 00518712 .html";
-            doc.Load(filename, Encoding.UTF8);
+            //const string filename = @"E:\wine\details\M_Montepulciano_d'Abruzzo 2010_ 00518712 .html";
+            var files = GetFileList(FilePath+@"\details\", "*.html");
 
-            var documentStore = new DocumentStore
-                                    {
-                                        ConnectionStringName = "CS"
-                                    }.Initialize();
-
-            var wineNameParts = filename.Split('_');
-
-            var wineId = wineNameParts[wineNameParts.Length - 1].Replace(".html", "").Trim();
-
-            using (var session = documentStore.OpenSession())
+            foreach (var filename in files)
             {
-                var wine = (session
-                                .Query<Wine>()
-                                .Where(p => p.Id == wineId))
-                                .First();
 
-                wine.Cup = ParseCupCode(doc.DocumentNode);
-                wine.Color = ParseColor(doc.DocumentNode);
-                wine.Country = ParseCountry(doc.DocumentNode);
-                wine.Region = ParseRegion(doc.DocumentNode);
-                wine.Appellation = ParseAppellation(doc.DocumentNode);
-                wine.Fournisseur = ParseFournisseur(doc.DocumentNode);
-                wine.AlcoholRate = ParseAlcohol(doc.DocumentNode);
-                wine.Price = ParsePrice(doc.DocumentNode);
-                session.Store(wine);
-                session.SaveChanges();
+                doc.Load(filename, Encoding.UTF8);
+
+                var documentStore = new DocumentStore
+                {
+                    ConnectionStringName = "CS"
+                }.Initialize();
+
+                var wineNameParts = filename.Split('_');
+
+                var wineId = wineNameParts[wineNameParts.Length - 1].Replace(".html", "").Trim();
+
+                using (var session = documentStore.OpenSession())
+                {
+                    var wineList = (session
+                                    .Query<Wine>()
+                                    .Where(p => p.Id == wineId));
+
+                    if (wineList == null || wineList.Count() == 0)
+                    { 
+                        continue; 
+                    }
+
+                    var wine = wineList.First();
+
+                    wine.Cup = ParseCupCode(doc.DocumentNode);
+                    wine.Color = ParseColor(doc.DocumentNode);
+                    wine.Country = ParseCountry(doc.DocumentNode);
+                    wine.Region = ParseRegion(doc.DocumentNode);
+                    wine.Appellation = ParseAppellation(doc.DocumentNode);
+                    wine.Fournisseur = ParseFournisseur(doc.DocumentNode);
+                    wine.AlcoholRate = ParseAlcohol(doc.DocumentNode);
+                    wine.Price = ParsePrice(doc.DocumentNode);
+                    session.Store(wine);
+                    session.SaveChanges();
+                }
+
             }
-
             //Name : doc.DocumentNode.SelectNodes("//table[@class='fiche_introduction transparent']/tr/td/h2")
             //Extras infos : doc.DocumentNode.SelectNodes("/html/body/div/div[4]/div/table[2]/tr/td/table/tbody/tr/td")
         }
@@ -190,6 +202,8 @@ namespace ScrapporNet
             var rawCup = document.SelectNodes(query).First().InnerHtml.CleanHtml();
             return rawCup.Split(':')[1].TrimStart();
         }
+
+        //document.SelectNodes("/html[1]/body[1]/div[1]/div[4]/div[1]/table[2]/tr[1]/td[1]/table[1]/tbody/tr[4]/td[@class='fiche_libelles']")
 
         private static string ParseColor(HtmlNode document)
         {

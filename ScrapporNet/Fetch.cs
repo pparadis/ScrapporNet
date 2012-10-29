@@ -93,12 +93,12 @@ namespace ScrapporNet
         {
             var web = new WebClient { Encoding = Encoding.UTF8 };
             web.Headers.Add("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; .NET CLR 1.0.3705;)");
-            for (var i = 0; i <= 10830; i = i + 100)
+            for (var i = 0; i <= 9133; i = i + 100)
             {
                 Thread.Sleep(500);
                 Console.WriteLine(i);
 
-                var req = @"http://www.saq.com/webapp/wcs/stores/servlet/CatalogSearchResultView?storeId=10001&langId=-2&catalogId=10001&searchTerm=&resultCatEntryType=&beginIndex=" + i + "&tri=RechercheUCIProdDescAttributeInfo&sensTri=AscOperator&searchType=100&codeReseau=&categoryId=&viewTaskName=SAQCatalogSearchResultView&catalogVenteId=&pageSize=100";
+                var req = @"http://www.saq.com/webapp/wcs/stores/servlet/CatalogSearchResultView?storeId=10001&langId=-2&catalogId=10001&searchTerm=&resultCatEntryType=&beginIndex=" + i + "&tri=RechercheUCIProdDescAttributeInfo&sensTri=AscOperator&searchType=400&codeReseau=&categoryId=11748&viewTaskName=SAQCatalogSearchResultView&catalogVenteId=&pageSize=100";
                 File.WriteAllText(FilePath + "saq_" + i + ".html", web.DownloadString(req), Encoding.UTF8);
             }
         }

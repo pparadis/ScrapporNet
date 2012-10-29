@@ -19,5 +19,12 @@
 
     public interface IProduct
     {
+        string Name{get;set;}
+        string Id { get; set; }
+        string Cup { get; set; }
+        string Category { get; set; }
+        string Color { get; set; }
+        string Nature { get; set; }
+        string Format { get; set; }
     }
 }

@@ -36,14 +36,16 @@ namespace ScrapporNet
 
             f.FetchWinesDetailsPages();
 
+            p.ParseWineDetailPages();
+
             Console.ReadLine();
         }
 
         private static string SetupFolders()
         {
-            var dateTimeTimeStamp = "201210272324114400" /*DateTime.Now.GetTimestamp()*/;
+            var dateTimeTimeStamp = "201210282114078872" /*DateTime.Now.GetTimestamp()*/;
+            //var dateTimeTimeStamp = DateTime.Now.GetTimestamp();
             System.IO.Directory.CreateDirectory(@"e:\Wine\" + dateTimeTimeStamp + @"\details\");
-            //return (@"e:\Wine\" + dateTimeTimeStamp + @"\");
             return (@"e:\Wine\" + dateTimeTimeStamp + @"\");
         }
     }

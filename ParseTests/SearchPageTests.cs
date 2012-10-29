@@ -15,8 +15,8 @@ namespace ParseTests
         public SearchPageTests()
         {
             docStore.Initialize();
-            var parse = new Parse(docStore);
-            parse.ParseWinesFromSearchResults();
+//var parse = new Parse(docStore);
+            //parse.ParseWinesFromSearchResults();
         }
         
         [Test]
