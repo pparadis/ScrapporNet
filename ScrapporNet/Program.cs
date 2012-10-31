@@ -21,9 +21,9 @@ namespace ScrapporNet
             var path = SetupFolders();
 
 
-            var f = new Fetch(path);
+            //var f = new Fetch(path);
 
-            f.DownloadWineListPages();
+            //f.DownloadWineListPages();
 
             
 
@@ -32,9 +32,9 @@ namespace ScrapporNet
                         ConnectionStringName = "CS"
                     }.Initialize(), path);
 
-            p.ParseWinesFromSearchResults();
+            //p.ParseWinesFromSearchResults();
 
-            f.FetchWinesDetailsPages();
+            //f.FetchWinesDetailsPages();
 
             p.ParseWineDetailPages();
 
