@@ -18,13 +18,10 @@ namespace ScrapporNet
 {
     public class Parse
     {
-        private IDocumentStore DocumentStore { get; set; }
         private string FilePath { get; set; }
 
-        public Parse(IDocumentStore documentStore, string filePath)
+        public Parse(string filePath)
         {
-            DocumentStore = documentStore;
-
             if (string.IsNullOrEmpty(filePath))
             {
                 SetupFolders();
@@ -138,36 +135,27 @@ namespace ScrapporNet
 
         protected void SaveWine(List<IProduct> product)
         {
-            using (var session = DocumentStore.OpenSession())
+            using (var docStore = new DocumentStore { ConnectionStringName = "CS" }.Initialize())
             {
-                product.ForEach(session.Store);
-                session.SaveChanges();
+                using (var session = docStore.OpenSession())
+                {
+                    product.ForEach(session.Store);
+                    session.SaveChanges();
+                }
             }
         }
-
-
 
         public void ParseWineDetailPages()
         {
             var doc = new HtmlDocument();
-            //const string filename = @"E:\wine\details\M_Montepulciano_d'Abruzzo 2010_ 00518712 .html";
             var files = GetFileList(FilePath + @"\details\", "*.html");
 
-            using (var docStore = new DocumentStore
-                    {
-                        ConnectionStringName = "CS"
-                    }.Initialize())
+            using (var docStore = new DocumentStore { ConnectionStringName = "CS" }.Initialize())
             {
-
-
-
                 foreach (var filename in files)
                 {
-
                     doc.Load(filename, Encoding.UTF8);
-
                     var wineNameParts = filename.Split('_');
-
                     var wineId = wineNameParts[wineNameParts.Length - 1].Replace(".html", "").Trim();
 
                     IQueryable<Wine> wineList;
@@ -185,28 +173,40 @@ namespace ScrapporNet
                     using (var session = docStore.OpenSession())
                     {
                         var wine = wineList.First();
-                        ParseDescriptiveProperties(doc.DocumentNode);
-                        //wine.Cup = ParseCupCode(doc.DocumentNode);
-                        //wine.Color = ParseColor(doc.DocumentNode);
-                        //wine.Country = ParseCountry(doc.DocumentNode);
-                        //wine.Region = ParseRegion(doc.DocumentNode);
-                        //wine.Appellation = ParseAppellation(doc.DocumentNode);
-                        //wine.Fournisseur = ParseFournisseur(doc.DocumentNode);
-                        //wine.AlcoholRate = ParseAlcohol(doc.DocumentNode);
-                        //wine.Price = ParsePrice(doc.DocumentNode);
-                        //session.Store(wine);
-                        //session.SaveChanges();
+                        dynamic properties = ParseDescriptiveProperties(doc.DocumentNode);
+                        wine.Cup = ParseCupCode(doc.DocumentNode);
+                        wine.Color = ParseColor(doc.DocumentNode);
+                        wine.Country = properties.Pays;
+                        wine.Region = properties.Region;
+                        wine.Appellation = properties.Appellation;
+                        wine.Fournisseur = properties.Fournisseur;
+                        wine.AlcoholRate = properties.PourcentageAlcool;
+                        wine.Price = ParsePrice(doc.DocumentNode);
+                        session.Store(wine);
+                        session.SaveChanges();
                     }
                 }
             }
-            //Name : doc.DocumentNode.SelectNodes("//table[@class='fiche_introduction transparent']/tr/td/h2")
-            //Extras infos : doc.DocumentNode.SelectNodes("/html/body/div/div[4]/div/table[2]/tr/td/table/tbody/tr/td")
         }
 
-        private static string ParseCupCode(HtmlNode document)
+        private string ParseCupCode(HtmlNode document)
         {
             const string query = "//table[@class='fiche_introduction transparent']/tr/td/p/strong[2]";
+            var value = document.SelectNodes(query);
+
+            if (value == null)
+            {
+                return "";
+            }
+
             var rawCup = document.SelectNodes(query).First().InnerHtml.CleanHtml();
+
+            var splitValue = rawCup.Split(':');
+            if (splitValue.Count() < 2)
+            {
+                return "";
+            }
+
             return rawCup.Split(':')[1].TrimStart();
         }
 
@@ -214,70 +214,74 @@ namespace ScrapporNet
         private static string ParseColor(HtmlNode document)
         {
             const string query = "//table[@id='description-base']/tbody/tr[2]/td[2]";
-            return document.SelectNodes(query).First().InnerHtml.CleanHtml();
+            var value = document.SelectNodes(query);
+
+            if (value == null)
+            {
+                return "";
+            }
+
+            return value.First().InnerHtml.CleanHtml();
         }
 
-        //document.SelectNodes("/html[1]/body[1]/div[1]/div[4]/div[1]/table[2]/tr[1]/td[1]/table[1]/tbody/tr[4]/td[@class='fiche_libelles']")
-
-        private string ParseDescriptiveProperties(HtmlNode document)
+        private ExpandoObject ParseDescriptiveProperties(HtmlNode document)
         {
             dynamic values = new ExpandoObject();
             var elementCountNodes = document.SelectNodes("/html[1]/body[1]/div[1]/div[4]/div[1]/table[2]/tr[1]/td[1]/table[1]/tbody/tr");
 
             if (elementCountNodes == null)
             {
-                return "";
+                return null;
             }
+            values.Pays = "";
+            values.Region = "";
+            values.Appellation = "";
+            values.Fournisseur = "";
+            values.PourcentageAlcool = "";
 
             for (var i = 1; i <= elementCountNodes.Count(); ++i)
             {
                 var result = document.SelectNodes("/html[1]/body[1]/div[1]/div[4]/div[1]/table[2]/tr[1]/td[1]/table[1]/tbody/tr[" + i + "]/td");
                 if (result != null && result.Count == 2)
                 {
-                    Console.WriteLine(result[0].InnerHtml.CleanHtml());
-                    Console.WriteLine(" -- ");
-                    Console.WriteLine(result[1].InnerHtml.CleanHtml());
+                    switch (result[0].InnerHtml.CleanHtml().Replace(":", "").Trim())
+                    {
+                        case "Pays" :
+                            values.Pays = result[1].InnerHtml.CleanHtml();
+                            break;
+                        case "Région" :
+                            values.Region = result[1].InnerHtml.CleanHtml();
+                            break;
+                        case "Appellation":
+                            values.Appellation = result[1].InnerHtml.CleanHtml();
+                            break;
+                        case "Fournisseur":
+                            values.Fournisseur = result[1].InnerHtml.CleanHtml();
+                            break;
+                        case "Pourcentage d'alcool":
+                            values.PourcentageAlcool = result[1].InnerHtml.CleanHtml();
+                            break;
+                    }
+                    //Console.WriteLine(result[0].InnerHtml.CleanHtml());
+                    //Console.WriteLine(" -- ");
+                    //Console.WriteLine(result[1].InnerHtml.CleanHtml());
                 }
             }
-
-            return "";
-        }
-
-
-        private static string ParseCountry(HtmlNode document)
-        {
-            const string query = "/html[1]/body[1]/div[1]/div[4]/div[1]/table[2]/tr[1]/td[1]/table[1]/tbody/tr[1]/td[2]";
-            return document.SelectNodes(query).First().InnerHtml.CleanHtml();
-        }
-
-        private static string ParseRegion(HtmlNode document)
-        {
-            const string query = "/html[1]/body[1]/div[1]/div[4]/div[1]/table[2]/tr[1]/td[1]/table[1]/tbody/tr[2]/td[2]";
-            return document.SelectNodes(query).First().InnerHtml.CleanHtml();
-        }
-
-        private static string ParseAppellation(HtmlNode document)
-        {
-            const string query = "/html[1]/body[1]/div[1]/div[4]/div[1]/table[2]/tr[1]/td[1]/table[1]/tbody/tr[3]/td[2]";
-            return document.SelectNodes(query).First().InnerHtml.CleanHtml();
-        }
-
-        private static string ParseFournisseur(HtmlNode document)
-        {
-            const string query = "/html[1]/body[1]/div[1]/div[4]/div[1]/table[2]/tr[1]/td[1]/table[1]/tbody/tr[4]/td[2]";
-            return document.SelectNodes(query).First().InnerHtml.CleanHtml();
-        }
-
-        private static string ParseAlcohol(HtmlNode document)
-        {
-            const string query = "/html[1]/body[1]/div[1]/div[4]/div[1]/table[2]/tr[1]/td[1]/table[1]/tbody/tr[5]/td[2]";
-            return document.SelectNodes(query).First().InnerHtml.CleanHtml();
+            return values;
         }
 
         private static string ParsePrice(HtmlNode document)
         {
             const string query = "/html[1]/body[1]/div[1]/div[4]/div[1]/table[1]/tr[1]/td[3]/p[1]/span[1]";
-            return document.SelectNodes(query).First().InnerHtml.CleanHtml();
+
+            var value = document.SelectNodes(query);
+
+            if (value == null)
+            {
+                return "";
+            }
+
+            return value.First().InnerHtml.CleanHtml();
         }
     }
 }

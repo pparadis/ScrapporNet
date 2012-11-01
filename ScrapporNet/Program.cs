@@ -20,22 +20,12 @@ namespace ScrapporNet
             var s = new Stopwatch();
             var path = SetupFolders();
 
-
             //var f = new Fetch(path);
-
             //f.DownloadWineListPages();
 
-            
-
-            var p = new Parse(new DocumentStore
-                    {
-                        ConnectionStringName = "CS"
-                    }.Initialize(), path);
-
+            var p = new Parse(path);
             //p.ParseWinesFromSearchResults();
-
             //f.FetchWinesDetailsPages();
-
             p.ParseWineDetailPages();
 
             Console.ReadLine();
